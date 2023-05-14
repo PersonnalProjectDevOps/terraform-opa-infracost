@@ -11,7 +11,9 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
 
     - name: Set up Terraform
       uses: hashicorp/setup-terraform@v1
@@ -53,7 +55,6 @@ jobs:
     - name: Evaluate Rego Policy
       run: |
         opa eval --data ./policies/aws_tags_policy.rego --input plan.json --format pretty "data.main.deny"
-        opa eval --data ./policies/aws_tags_policy.rego --input plan.json --format pretty "data.terraform.analysis.authz"
         opa eval --data ./policies/aws_cost_policy.rego --input infracost_output.json --format pretty "data.main.deny"
     
     - name: Show results

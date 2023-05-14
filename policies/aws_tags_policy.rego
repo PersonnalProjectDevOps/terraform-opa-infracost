@@ -8,21 +8,24 @@ deny[msg] {
 }
 
 deny[msg] {
-  input.resource_type == "aws_instance"
-  not input.tags.team
+  resource := input.resource_changes[_]
+  resource.type == "aws_instance"
+  not resource.change.after.tags.team
   msg = "Missing required tag 'team' for EC2 instance."
 }
 
 deny[msg] {
-  input.resource_type == "aws_db_instance"
-  not input.tags.env
-  msg = "Missing required tag 'env' for RDS instance."
+  resource := input.resource_changes[_]
+  resource.type == "aws_db_instance"
+  not resource.change.after.tags.env
+  msg = "Missing required tag 'env' for EC2 instance."
 }
 
 deny[msg] {
-  input.resource_type == "aws_db_instance"
-  not input.tags.team
-  msg = "Missing required tag 'team' for RDS instance."
+  resource := input.resource_changes[_]
+  resource.type == "aws_db_instance"
+  not resource.change.after.tags.team
+  msg = "Missing required tag 'team' for EC2 instance."
 }
 
 deny[msg] {
