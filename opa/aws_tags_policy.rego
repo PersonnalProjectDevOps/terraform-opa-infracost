@@ -1,8 +1,9 @@
 package main
 
 deny[msg] {
-  input.resource_type == "aws_instance"
-  not input.tags.env
+  resource := input.resource_changes[_]
+  resource.type == "aws_instance"
+  not resource.change.after.tags.env
   msg = "Missing required tag 'env' for EC2 instance."
 }
 
