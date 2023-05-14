@@ -43,7 +43,7 @@ jobs:
         sudo mv opa /usr/local/bin/
     
     - name: Generate Infracost JSON Output
-      run: infracost breakdown --path . --format json --out-file infracost_output.json -var="db_username=${{ secrets.DB_USERNAME }}" -var="db_password=${{ secrets.DB_PASSWORD }}"
+      run: infracost breakdown --path . --format json --out-file infracost_output.json --terraform-var="db_username=${{ secrets.DB_USERNAME }}" --terraform-varr="db_password=${{ secrets.DB_PASSWORD }}"
 
     - name: Evaluate Rego Policy
       run: opa eval --data aws_cost_and_tags_policy.rego --input infracost_output.json --format pretty "data.main.deny"
