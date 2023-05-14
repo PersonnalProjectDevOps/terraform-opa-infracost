@@ -58,6 +58,6 @@ jobs:
         opa eval --data ./policies/aws_cost_policy.rego --input infracost_output.json --format pretty "data.main.deny"
 
     - name: Version OPA
-      run: opa version
+      run: terraform version
     
 
