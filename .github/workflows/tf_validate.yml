@@ -59,6 +59,5 @@ jobs:
     
     - name: Show results
       run: |
-       cat infracost_output.json
-       cat plan.json
+       opa version
 
