@@ -13,6 +13,16 @@ resource "aws_instance" "example" {
   }
 }
 
+resource "aws_instance" "example_for_pr" {
+  ami           = "ami-0c55b159cbfafe1f0" # This is an example Amazon Linux 2 AMI ID; replace with an appropriate AMI ID for your region
+  instance_type = "t2.micro"
+
+  tags = {
+    Name = "example-instance"
+    team = "example-team"
+  }
+}
+
 resource "aws_db_instance" "example" {
   allocated_storage    = 20
   storage_type         = "gp2"
