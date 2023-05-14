@@ -19,7 +19,7 @@ resource "aws_instance" "example_for_pr" {
 
   tags = {
     Name = "example-instance"
-    team = "example-team"
+    team = "team-infra"
   }
 }
 
