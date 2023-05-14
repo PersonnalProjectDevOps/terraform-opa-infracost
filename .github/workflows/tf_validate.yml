@@ -1,0 +1,44 @@
+name: Validate Terraform
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v1
+
+    - name: Terraform Init
+      run: terraform init
+
+    - name: Terraform Validate
+      run: terraform validate
+
+    - name: Install Infracost
+      run: |
+        curl -s -L https://github.com/infracost/infracost/releases/latest/download/infracost-linux.tar.gz | tar xz -C /tmp
+        sudo mv /tmp/infracost /usr/local/bin/
+        infracost --version
+
+    - name: Install OPA
+      run: |
+        curl -L -o opa https://openpolicyagent.org/downloads/latest/opa_linux_amd64
+        chmod 755 ./opa
+        sudo mv opa /usr/local/bin/
+    
+    - name: Generate Infracost JSON Output
+      run: infracost breakdown --path . --format json --output infracost_output.json -var="db_username=${{ secrets.DB_USERNAME }}" -var="db_password=${{ secrets.DB_PASSWORD }}"
+
+    - name: Evaluate Rego Policy
+      run: opa eval --data aws_cost_and_tags_policy.rego --input infracost_output.json --format pretty "data.main.deny"
+
+    - name: Terraform Plan
+      run: terraform plan -var="db_username=${{ secrets.DB_USERNAME }}" -var="db_password=${{ secrets.DB_PASSWORD }}"
