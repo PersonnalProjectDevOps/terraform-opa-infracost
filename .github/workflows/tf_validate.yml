@@ -29,6 +29,11 @@ jobs:
     - name: Terraform Validate
       run: terraform validate
 
+    - name: Generate Terraform Plan JSON Output
+      run: |
+        terraform plan -var="db_username=${{ secrets.DB_USERNAME }}" -var="db_password=${{ secrets.DB_PASSWORD }}" -out=tfplan.binary
+        terraform show -json tfplan.binary > plan.json
+
     - name: Setup Infracost
       uses: infracost/actions/setup@v2
         # See https://github.com/infracost/actions/tree/master/setup for other inputs
@@ -46,7 +51,7 @@ jobs:
       run: infracost breakdown --path . --format json --out-file infracost_output.json --terraform-var="db_username=${{ secrets.DB_USERNAME }}" --terraform-var="db_password=${{ secrets.DB_PASSWORD }}"
 
     - name: Evaluate Rego Policy
-      run: opa eval --data aws_cost_and_tags_policy.rego --input infracost_output.json --format pretty "data.main.deny"
+      run: |
+        opa eval --data aws_cost_and_tags_policy.rego --input plan.json --format pretty "data.main.deny"
+        opa eval --data aws_cost_and_tags_policy.rego --input infracost_output.json --format pretty "data.main.deny"
 
-    - name: Terraform Plan
-      run: terraform plan -var="db_username=${{ secrets.DB_USERNAME }}" -var="db_password=${{ secrets.DB_PASSWORD }}"
