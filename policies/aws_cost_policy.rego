@@ -6,7 +6,7 @@ sum_project_costs(projects) = total {
 
 deny[msg] {
     total_monthly_cost := sum_project_costs(input.projects)
-    total_monthly_cost > 1
+    total_monthly_cost > 100
     msg = sprintf("Total monthly cost of $%.2f exceeds the $100 limit.", [total_monthly_cost])
 }
 
