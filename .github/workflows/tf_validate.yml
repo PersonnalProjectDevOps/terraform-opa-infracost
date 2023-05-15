@@ -35,7 +35,7 @@ jobs:
       id: plan
       run: |
         terraform plan -var="db_username=${{ secrets.DB_USERNAME }}" -var="db_password=${{ secrets.DB_PASSWORD }}" -out=tfplan.binary
-        echo 'json=$(terraform show -json tfplan.binary)' >> $GITHUB_OUTPUT
+        echo 'json=`$(terraform show -json tfplan.binary)`' >> $GITHUB_OUTPUT
 
     - name: Setup Infracost
       uses: infracost/actions/setup@v2
@@ -55,7 +55,7 @@ jobs:
 
     - name: Evaluate Rego Policy
       run: |
-        opa eval --data ./policies/aws_tags_policy.rego --input `$(terraform show -json tfplan.binary)` --format pretty "data.main.deny"
+        opa eval --data ./policies/aws_tags_policy.rego --input ${{ steps.plan.outputs.json }} --format pretty "data.main.deny"
         opa eval --data ./policies/aws_cost_policy.rego --input infracost_output.json --format pretty "data.main.deny"
 
 
