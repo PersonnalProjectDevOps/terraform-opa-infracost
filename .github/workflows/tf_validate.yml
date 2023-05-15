@@ -16,10 +16,10 @@ jobs:
         fetch-depth: 0
 
     - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v1
+      uses: hashicorp/setup-terraform@v2
 
     - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1
+      uses: aws-actions/configure-aws-credentials@v2
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -34,7 +34,7 @@ jobs:
     - name: Generate Terraform Plan JSON Output
       run: |
         terraform plan -var="db_username=${{ secrets.DB_USERNAME }}" -var="db_password=${{ secrets.DB_PASSWORD }}" -out=tfplan.binary
-        terraform show -json tfplan.binary > plan.json
+        terraform show -json tfplan.binary | grep -v "::debug::" | tail -n +2 > plan.json
 
     - name: Setup Infracost
       uses: infracost/actions/setup@v2
@@ -52,13 +52,30 @@ jobs:
     - name: Generate Infracost JSON Output
       run: infracost breakdown --path . --format json --out-file infracost_output.json --terraform-var="db_username=${{ secrets.DB_USERNAME }}" --terraform-var="db_password=${{ secrets.DB_PASSWORD }}"
 
-    - name: Evaluate Rego Policy
+    - name: Evaluate Rego Policies
+      id: evaluate_policies
       run: |
-        opa eval --data ./policies/aws_tags_policy.rego --input plan.json --format pretty "data.main.deny"
-        opa eval --data ./policies/aws_cost_policy.rego --input infracost_output.json --format pretty "data.main.deny"
-    
-    - name: Show results
+        opa eval --data ./policies/aws_tags_policy.rego --input plan.json --format pretty "data.main.deny" > tags_policy_result.txt
+        opa eval --data ./policies/aws_cost_policy.rego --input infracost_output.json --format pretty "data.main.deny" > cost_policy_result.txt
+        if [[ -s tags_policy_result.txt || -s cost_policy_result.txt ]]; then 
+          exit 1
+        fi
+
+    - name: Add policy results to job summary
+      if: failure()
       run: |
-       cat infracost_output.json
-       cat plan.json
+        if [[ -s tags_policy_result.txt ]]; then
+          echo "Tags policy violations:" >> $GITHUB_STEP_SUMMARY
+          cat tags_policy_result.txt >> $GITHUB_STEP_SUMMARY
+        fi
+        if [[ -s cost_policy_result.txt ]]; then
+          echo "Cost policy violations:" >> $GITHUB_STEP_SUMMARY
+          cat cost_policy_result.txt >> $GITHUB_STEP_SUMMARY
+        fi
+
+
+
+      
+
+     
 
