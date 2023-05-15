@@ -57,6 +57,8 @@ jobs:
         sudo apt-get install dos2unix
         cat plan.json
         dos2unix plan.json
+        xxd plan.json
+        file -i plan.json
         jq . plan.json
         opa eval --data ./policies/aws_tags_policy.rego --input plan.json --format pretty "data.main.deny"
         opa eval --data ./policies/aws_cost_policy.rego --input infracost_output.json --format pretty "data.main.deny"
