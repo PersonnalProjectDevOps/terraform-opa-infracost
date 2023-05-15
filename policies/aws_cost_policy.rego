@@ -1,20 +1,12 @@
 package main
 
+sum_project_costs(projects) = total {
+    total := sum({to_number(p.breakdown.totalMonthlyCost) | p = projects[_]})
+}
+
 deny[msg] {
     total_monthly_cost := sum_project_costs(input.projects)
-    total_monthly_cost > 0
-    msg = sprintf("Total monthly cost of $%.2f exceeds the $100 limit.", [total_monthly_cost])
-}
-
-sum_project_costs(projects) = total_cost {
-    cost_list := [to_number(projects[i].breakdown.totalMonthlyCost) | i := range(projects)]
-    total_cost := sum(cost_list)
-}
-
-sum(arr) = result {
-    result := 0
-    _ = arr[_]
-    result = result + arr[_]
+    msg = sprintf("Total monthly cost is $%.2f.", [total_monthly_cost])
 }
 
 deny[msg] {
