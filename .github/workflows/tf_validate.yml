@@ -39,10 +39,9 @@ jobs:
         echo 'json=$json_plan' >> $GITHUB_OUTPUT
 
     - run: |
-        json_plan=$( terraform show -json tfplan.binary | grep -v "::debug::" )
+        json_plan=$( terraform show -json tfplan.binary | grep -v "::debug::" | tail -n +2 )
         echo ${{ steps.plan.outputs.json }}
         echo $json_plan
-        echo "$(sed -n '/{/,/}/p' $json_plan)"
 
     - name: Setup Infracost
       uses: infracost/actions/setup@v2
