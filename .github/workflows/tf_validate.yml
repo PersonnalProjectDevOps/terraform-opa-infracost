@@ -54,7 +54,7 @@ jobs:
 
     - name: Evaluate Rego Policy
       run: |
-        cat plan.json | jq '.resource_changes[0].change.after.tags.env'
+        cat plan.json | jq '.resource_changes'
         opa eval --data ./policies/aws_tags_policy.rego --input plan.json --format pretty "data.main.deny"
         opa eval --data ./policies/aws_cost_policy.rego --input infracost_output.json --format pretty "data.main.deny"
 
