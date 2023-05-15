@@ -59,16 +59,17 @@ jobs:
         echo 'TAGS_POLICY_RESULT=$TAGS_POLICY_RESULT' >> $GITHUB_ENV
         echo 'COST_POLICY_RESULT=$COST_POLICY_RESULT' >> $GITHUB_ENV
         if [[ -n "$TAGS_POLICY_RESULT" || -n "$COST_POLICY_RESULT" ]]; then exit 1; fi
+        
     - name: Add policy results to job summary
       if: failure()
       run: |
-        if [[ -n "$TAGS_POLICY_RESULT" ]]; then
+        if [[ -n "${{ env.TAGS_POLICY_RESULT }}" ]]; then
           echo "Tags policy violations:" >> $GITHUB_STEP_SUMMARY
-          echo "$TAGS_POLICY_RESULT" >> $GITHUB_STEP_SUMMARY
+          echo "${{ env.TAGS_POLICY_RESULT }}" >> $GITHUB_STEP_SUMMARY
         fi
-        if [[ -n "$COST_POLICY_RESULT" ]]; then
+        if [[ -n "${{ env.COST_POLICY_RESULT }}" ]]; then
           echo "Cost policy violations:" >> $GITHUB_STEP_SUMMARY
-          echo "$COST_POLICY_RESULT" >> $GITHUB_STEP_SUMMARY
+          echo "${{ env.COST_POLICY_RESULT }}" >> $GITHUB_STEP_SUMMARY
         fi
 
 
