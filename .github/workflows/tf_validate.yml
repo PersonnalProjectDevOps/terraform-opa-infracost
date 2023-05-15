@@ -56,15 +56,15 @@ jobs:
       run: |
         TAGS_POLICY_RESULT=$(opa eval --data ./policies/aws_tags_policy.rego --input plan.json --format pretty "data.main.deny")
         COST_POLICY_RESULT=$(opa eval --data ./policies/aws_cost_policy.rego --input infracost_output.json --format pretty "data.main.deny")
-        echo 'TAGS_POLICY_RESULT=$TAGS_POLICY_RESULT' >> $GITHUB_ENV
-        echo 'COST_POLICY_RESULT=$COST_POLICY_RESULT' >> $GITHUB_ENV
-        echo "$TAGS_POLICY_RESULT"
-        echo "$COST_POLICY_RESULT"
+        echo 'TAGS_POLICY_RESULT=`$TAGS_POLICY_RESULT`' >> $GITHUB_ENV
+        echo 'COST_POLICY_RESULT=`$COST_POLICY_RESULT`' >> $GITHUB_ENV
         if [[ -n "$TAGS_POLICY_RESULT" || -n "$COST_POLICY_RESULT" ]]; then exit 1; fi
         
     - name: Add policy results to job summary
       if: failure()
       run: |
+        echo "${{ env.TAGS_POLICY_RESULT }}"
+        echo "${{ env.COST_POLICY_RESULT }}"
         if [[ -n "${{ env.TAGS_POLICY_RESULT }}" ]]; then
           echo "Tags policy violations:" >> $GITHUB_STEP_SUMMARY
           echo "${{ env.TAGS_POLICY_RESULT }}" >> $GITHUB_STEP_SUMMARY
