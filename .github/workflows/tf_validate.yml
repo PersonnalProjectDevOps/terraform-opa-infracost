@@ -54,7 +54,6 @@ jobs:
 
     - name: Evaluate Rego Policy
       run: |
-        cat infracost_output.json  | jq ".projects[0].breakdown.totalMonthlyCost" 
         opa eval --data ./policies/aws_tags_policy.rego --input plan.json --format pretty "data.main.deny"
         opa eval --data ./policies/aws_cost_policy.rego --input infracost_output.json --format pretty "data.main.deny"
 
