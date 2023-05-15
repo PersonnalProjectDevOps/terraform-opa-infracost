@@ -54,12 +54,14 @@ jobs:
 
     - name: Evaluate Rego Policy
       run: |
-        sudo apt-get update
-        sudo apt-get upgrade jq
-        cat  plan.json >> $GITHUB_STEP_SUMMARY
-        cat  plan.json | jq .      
         opa eval --data ./policies/aws_tags_policy.rego --input plan.json --format pretty "data.main.deny"
         opa eval --data ./policies/aws_cost_policy.rego --input infracost_output.json --format pretty "data.main.deny"
+
+    - name: Archive code coverage results
+      uses: actions/upload-artifact@v3
+      with:
+        name: plan.json
+        path: plan.json
 
      
 
