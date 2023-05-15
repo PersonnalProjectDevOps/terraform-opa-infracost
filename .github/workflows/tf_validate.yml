@@ -34,7 +34,7 @@ jobs:
     - name: Generate Terraform Plan JSON Output
       run: |
         terraform plan -var="db_username=${{ secrets.DB_USERNAME }}" -var="db_password=${{ secrets.DB_PASSWORD }}" -out=tfplan.binary
-        terraform show -json tfplan.binary > plan.json
+        terraform show -json tfplan.binary > plan.json 2>/dev/null
 
     - name: Setup Infracost
       uses: infracost/actions/setup@v2
