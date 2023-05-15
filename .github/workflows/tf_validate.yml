@@ -55,25 +55,24 @@ jobs:
     - name: Evaluate Rego Policies
       id: evaluate_policies
       run: |
-        TAGS_POLICY_RESULT=$(opa eval --data ./policies/aws_tags_policy.rego --input plan.json --format pretty "data.main.deny")
-        COST_POLICY_RESULT=$(opa eval --data ./policies/aws_cost_policy.rego --input infracost_output.json --format pretty "data.main.deny")
-        if [[ -n "$TAGS_POLICY_RESULT" || -n "$COST_POLICY_RESULT" ]]; then 
-          echo 'tags_policy_result=$TAGS_POLICY_RESULT' >> $GITHUB_OUTPUT
-          echo 'cost_policy_result=$COST_POLICY_RESULT' >> $GITHUB_OUTPUT
+        opa eval --data ./policies/aws_tags_policy.rego --input plan.json --format pretty "data.main.deny" > tags_policy_result.txt
+        opa eval --data ./policies/aws_cost_policy.rego --input infracost_output.json --format pretty "data.main.deny" > cost_policy_result.txt
+        if [[ -s tags_policy_result.txt || -s cost_policy_result.txt ]]; then 
           exit 1
         fi
 
     - name: Add policy results to job summary
       if: failure()
       run: |
-        if [[ -n "${{ steps.evaluate_policies.outputs.tags_policy_result }}" ]]; then
+        if [[ -s tags_policy_result.txt ]]; then
           echo "Tags policy violations:" >> $GITHUB_STEP_SUMMARY
-          echo "${{ steps.evaluate_policies.outputs.tags_policy_result }}" >> $GITHUB_STEP_SUMMARY
+          cat tags_policy_result.txt >> $GITHUB_STEP_SUMMARY
         fi
-        if [[ -n "${{ steps.evaluate_policies.outputs.cost_policy_result }}" ]]; then
+        if [[ -s cost_policy_result.txt ]]; then
           echo "Cost policy violations:" >> $GITHUB_STEP_SUMMARY
-          echo "${{ steps.evaluate_policies.outputs.cost_policy_result }}" >> $GITHUB_STEP_SUMMARY
+          cat cost_policy_result.txt >> $GITHUB_STEP_SUMMARY
         fi
+
 
 
       
