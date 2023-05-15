@@ -2,16 +2,16 @@ provider "aws" {
   region = "us-west-2"
 }
 
-resource "aws_instance" "example" {
-  ami           = "ami-0c55b159cbfafe1f0" # This is an example Amazon Linux 2 AMI ID; replace with an appropriate AMI ID for your region
-  instance_type = "t2.micro"
+# resource "aws_instance" "example" {
+#   ami           = "ami-0c55b159cbfafe1f0" # This is an example Amazon Linux 2 AMI ID; replace with an appropriate AMI ID for your region
+#   instance_type = "t2.micro"
 
-  tags = {
-    Name = "example-instance"
-    env  = "development"
-    team = "example-team"
-  }
-}
+#   tags = {
+#     Name = "example-instance"
+#     env  = "development"
+#     team = "example-team"
+#   }
+# }
 
 resource "aws_instance" "example_for_pr" {
   ami           = "ami-0c55b159cbfafe1f0" # This is an example Amazon Linux 2 AMI ID; replace with an appropriate AMI ID for your region
