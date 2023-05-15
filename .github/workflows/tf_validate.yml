@@ -58,8 +58,8 @@ jobs:
         TAGS_POLICY_RESULT=$(opa eval --data ./policies/aws_tags_policy.rego --input plan.json --format pretty "data.main.deny")
         COST_POLICY_RESULT=$(opa eval --data ./policies/aws_cost_policy.rego --input infracost_output.json --format pretty "data.main.deny")
         if [[ -n "$TAGS_POLICY_RESULT" || -n "$COST_POLICY_RESULT" ]]; then 
-          echo "tags_policy_result=$TAGS_POLICY_RESULT" >> $GITHUB_OUTPUT
-          echo "cost_policy_result=$COST_POLICY_RESULT" >> $GITHUB_OUTPUT
+          echo 'tags_policy_result=$TAGS_POLICY_RESULT' >> $GITHUB_OUTPUT
+          echo 'cost_policy_result=$COST_POLICY_RESULT' >> $GITHUB_OUTPUT
           exit 1
         fi
 
