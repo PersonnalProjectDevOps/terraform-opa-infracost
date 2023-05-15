@@ -35,13 +35,8 @@ jobs:
       id: plan
       run: |
         terraform plan -var="db_username=${{ secrets.DB_USERNAME }}" -var="db_password=${{ secrets.DB_PASSWORD }}" -out=tfplan.binary
-        json_plan=$( terraform show -json tfplan.binary )
-        echo 'json=$json_plan' >> $GITHUB_OUTPUT
-
-    - run: |
         json_plan=$( terraform show -json tfplan.binary | grep -v "::debug::" | tail -n +2 )
-        echo ${{ steps.plan.outputs.json }}
-        echo $json_plan
+        echo 'json=$json_plan' >> $GITHUB_OUTPUT
 
     - name: Setup Infracost
       uses: infracost/actions/setup@v2
