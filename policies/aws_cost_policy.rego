@@ -1,13 +1,15 @@
 package main
 
-deny[r] {
-    total_monthly_cost_string := sum(input.projects[_].breakdown.totalMonthlyCost)
-    total_monthly_cost := to_number(total_monthly_cost_string)
+deny[msg] {
+    total_monthly_cost := 0
+    some i
+    monthly_cost_string := input.projects[i].breakdown.totalMonthlyCost
+    monthly_cost := to_number(monthly_cost_string)
+    total_monthly_cost = total_monthly_cost + monthly_cost
     total_monthly_cost > 0
-    msg = sprintf("Total monthly cost of $%.2f exceeds the $100 limit.", [total_monthly_cost])
-    total_monthly_cost < 0
-    r = total_monthly_cost
+    msg = sprintf("Total monthly cost is $%.2f", [total_monthly_cost])
 }
+
 
 
 deny[msg] {
