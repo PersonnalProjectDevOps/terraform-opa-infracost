@@ -2,15 +2,7 @@ package main
 
 
 deny[msg] {
-  input.resource_type == "aws_instance"
-  monthly_cost := input.monthly_cost
-  monthly_cost > 1
-  msg = "The monthly cost of the EC2 instance must be under $1."
-}
-
-deny[msg] {
-  input.resource_type == "aws_db_instance"
-  monthly_cost := input.monthly_cost
-  monthly_cost > 5
-  msg = "The monthly cost of the RDS instance must be under $5."
+    total_monthly_cost := sum(input.projects[_].breakdown.totalMonthlyCost)
+    total_monthly_cost > 1
+    msg = sprintf("Total monthly cost of $%.2f exceeds the $100 limit.", [total_monthly_cost])
 }
