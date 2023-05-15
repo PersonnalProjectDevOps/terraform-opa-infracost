@@ -54,25 +54,21 @@ jobs:
 
     - name: Evaluate Rego Policies
       run: |
-        sudo apt-get install jq
-        TAGS_POLICY_RESULT=$(opa eval --data ./policies/aws_tags_policy.rego --input plan.json --format json "data.main.deny")
-        COST_POLICY_RESULT=$(opa eval --data ./policies/aws_cost_policy.rego --input infracost_output.json --format json "data.main.deny")
+        TAGS_POLICY_RESULT=$(opa eval --data ./policies/aws_tags_policy.rego --input plan.json --format pretty "data.main.deny")
+        COST_POLICY_RESULT=$(opa eval --data ./policies/aws_cost_policy.rego --input infracost_output.json --format pretty "data.main.deny")
         echo "TAGS_POLICY_RESULT=$TAGS_POLICY_RESULT" >> $GITHUB_ENV
         echo "COST_POLICY_RESULT=$COST_POLICY_RESULT" >> $GITHUB_ENV
-        TAGS_POLICY_RESULT_LENGTH=$(echo $TAGS_POLICY_RESULT | jq length)
-        COST_POLICY_RESULT_LENGTH=$(echo $COST_POLICY_RESULT | jq length)
-        if [[ $TAGS_POLICY_RESULT_LENGTH -gt 0 || $COST_POLICY_RESULT_LENGTH -gt 0 ]]; then exit 1; fi
-
+        if [[ -n "$TAGS_POLICY_RESULT" || -n "$COST_POLICY_RESULT" ]]; then exit 1; fi
     - name: Add policy results to job summary
       if: failure()
       run: |
-        if [[ ! -z "$TAGS_POLICY_RESULT" ]]; then
+        if [[ -n "$TAGS_POLICY_RESULT" ]]; then
           echo "Tags policy violations:" >> $GITHUB_STEP_SUMMARY
-          echo $TAGS_POLICY_RESULT | jq . >> $GITHUB_STEP_SUMMARY
+          echo "$TAGS_POLICY_RESULT" >> $GITHUB_STEP_SUMMARY
         fi
-        if [[ ! -z "$COST_POLICY_RESULT" ]]; then
+        if [[ -n "$COST_POLICY_RESULT" ]]; then
           echo "Cost policy violations:" >> $GITHUB_STEP_SUMMARY
-          echo $COST_POLICY_RESULT | jq . >> $GITHUB_STEP_SUMMARY
+          echo "$COST_POLICY_RESULT" >> $GITHUB_STEP_SUMMARY
         fi
 
 
