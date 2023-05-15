@@ -39,7 +39,7 @@ jobs:
         echo 'json=$json_plan' >> $GITHUB_OUTPUT
 
     - run: |
-        json_plan=$( terraform show -json tfplan.binary )
+        json_plan=$( terraform show -json tfplan.binary | grep -v "::debug::" )
         echo ${{ steps.plan.outputs.json }}
         echo $json_plan
 
