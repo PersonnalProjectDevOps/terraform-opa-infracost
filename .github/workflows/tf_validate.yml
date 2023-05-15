@@ -56,7 +56,6 @@ jobs:
       run: |
         cat plan.json
         jq . plan.json
-        cat plan.json | jq '.resource_changes'
         opa eval --data ./policies/aws_tags_policy.rego --input plan.json --format pretty "data.main.deny"
         opa eval --data ./policies/aws_cost_policy.rego --input infracost_output.json --format pretty "data.main.deny"
 
