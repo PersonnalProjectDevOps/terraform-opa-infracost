@@ -2,7 +2,7 @@ package main
 
 deny[msg] {
     total_monthly_cost := sum_project_costs(input.projects)
-    total_monthly_cost > 100
+    total_monthly_cost > 0
     msg = sprintf("Total monthly cost of $%.2f exceeds the $100 limit.", [total_monthly_cost])
 }
 
