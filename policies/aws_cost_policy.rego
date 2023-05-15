@@ -1,16 +1,21 @@
 package main
 
 deny[msg] {
-    total_monthly_cost := 0
-    some i
-    monthly_cost_string := input.projects[i].breakdown.totalMonthlyCost
-    monthly_cost := to_number(monthly_cost_string)
-    total_monthly_cost = total_monthly_cost + monthly_cost
-    total_monthly_cost > 0
-    msg = sprintf("Total monthly cost is $%.2f", [total_monthly_cost])
+    total_monthly_cost := sum_project_costs(input.projects)
+    total_monthly_cost > 100
+    msg = sprintf("Total monthly cost of $%.2f exceeds the $100 limit.", [total_monthly_cost])
 }
 
+sum_project_costs(projects) = total_cost {
+    cost_list := [to_number(projects[i].breakdown.totalMonthlyCost) | i := range(projects)]
+    total_cost := sum(cost_list)
+}
 
+sum(arr) = result {
+    result := 0
+    _ = arr[_]
+    result = result + arr[_]
+}
 
 deny[msg] {
     past_total_monthly_cost_string := sum(input.projects[_].pastBreakdown.totalMonthlyCost)
