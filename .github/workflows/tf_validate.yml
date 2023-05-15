@@ -34,7 +34,7 @@ jobs:
     - name: Generate Terraform Plan JSON Output
       run: |
         terraform plan -var="db_username=${{ secrets.DB_USERNAME }}" -var="db_password=${{ secrets.DB_PASSWORD }}" -out=tfplan.binary
-        terraform show -json tfplan.binary > plan.json 2>/dev/null
+        echo "PLAN_JSON=$(terraform show -json tfplan.binary)" >> $GITHUB_ENV
 
     - name: Setup Infracost
       uses: infracost/actions/setup@v2
@@ -54,15 +54,10 @@ jobs:
 
     - name: Evaluate Rego Policy
       run: |
-        sed -n '/{/,/}/p' plan.json > cleaned_plan.json
-        opa eval --data ./policies/aws_tags_policy.rego --input plan.json --format pretty "data.main.deny"
+        opa eval --data ./policies/aws_tags_policy.rego --input ${{ env.PLAN_JSON }} --format pretty "data.main.deny"
         opa eval --data ./policies/aws_cost_policy.rego --input infracost_output.json --format pretty "data.main.deny"
 
-    - name: Archive code coverage results
-      uses: actions/upload-artifact@v3
-      with:
-        name: plan.json
-        path: cleaned_plan.json
+
 
      
 
