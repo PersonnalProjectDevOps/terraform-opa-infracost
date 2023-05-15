@@ -38,6 +38,7 @@ jobs:
         json_plan=$( terraform show -json tfplan.binary )
         echo 'json=$json_plan' >> $GITHUB_OUTPUT
 
+    - run: echo ${{ steps.plan.outputs.json }}
     - name: Setup Infracost
       uses: infracost/actions/setup@v2
         # See https://github.com/infracost/actions/tree/master/setup for other inputs
