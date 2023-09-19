@@ -17,4 +17,4 @@ The GitHub Actions workflow runs on pull requests, validating the Terraform code
 
 - Terraform v1.x
 - Open Policy Agent (OPA)
-- Infracost
+- Infracost 
