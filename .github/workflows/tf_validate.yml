@@ -1,3 +1,86 @@
+# name: Validate Terraform
+
+# on:
+#   pull_request:
+#     branches:
+#       - main
+
+# env:
+#   AWS_REGION : "us-west-2"
+
+# permissions:
+#   id-token: write   # This is required for requesting the JWT
+#   contents: read    # This is required for actions/checkout
+
+
+# jobs:
+#   terraform:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#     - name: Checkout repository
+#       uses: actions/checkout@v3
+#       with:
+#         fetch-depth: 0
+
+#     - name: Set up Terraform
+#       uses: hashicorp/setup-terraform@v2
+
+#     - name: Authenticate with AWS
+#       uses: aws-actions/configure-aws-credentials@v2
+#       with:
+#         role-to-assume: arn:aws:iam::708398767885:role/github_OIDC_new
+#         role-session-name: github_oidc_role_session_new
+#         aws-region: ${{ env.AWS_REGION }}
+
+#     - name: Terraform Init
+#       run: terraform init 
+
+#     - name: Terraform Validate
+#       run: terraform validate
+
+#     - name: Generate Terraform Plan JSON Output
+#       run: |
+#         terraform plan -var="db_username=${{ secrets.DB_USERNAME }}" -var="db_password=${{ secrets.DB_PASSWORD }}" -out=tfplan.binary
+#         terraform show -json tfplan.binary | grep -v "::debug::" | tail -n +2 > plan.json
+
+#     - name: Setup Infracost
+#       uses: infracost/actions/setup@v2
+#         # See https://github.com/infracost/actions/tree/master/setup for other inputs
+#         # If you can't use this action, see Docker images in https://infracost.io/cicd
+#       with:
+#           api-key: ${{ secrets.INFRACOST_API_KEY }}
+
+#     - name: Install OPA
+#       run: |
+#         curl -L -o opa https://openpolicyagent.org/downloads/latest/opa_linux_amd64
+#         chmod 755 ./opa
+#         sudo mv opa /usr/local/bin/
+    
+#     - name: Generate Infracost JSON Output
+#       run: infracost breakdown --path . --format json --out-file infracost_output.json --terraform-var="db_username=${{ secrets.DB_USERNAME }}" --terraform-var="db_password=${{ secrets.DB_PASSWORD }}"
+
+#     - name: Evaluate Rego Policies
+#       id: evaluate_policies
+#       run: |
+#         opa eval --data ./policies/aws_tags_policy.rego --input plan.json --format pretty "data.main.deny" > tags_policy_result.txt
+#         opa eval --data ./policies/aws_cost_policy.rego --input infracost_output.json --format pretty "data.main.deny" > cost_policy_result.txt
+#         if [[ -s tags_policy_result.txt || -s cost_policy_result.txt ]]; then 
+#           exit 1
+#         fi
+
+#     - name: Add policy results to job summary
+#       if: failure()
+#       run: |
+#         if [[ -s tags_policy_result.txt ]]; then
+#           echo "Tags policy violations:" >> $GITHUB_STEP_SUMMARY
+#           cat tags_policy_result.txt >> $GITHUB_STEP_SUMMARY
+#         fi
+#         if [[ -s cost_policy_result.txt ]]; then
+#           echo "Cost policy violations:" >> $GITHUB_STEP_SUMMARY
+#           cat cost_policy_result.txt >> $GITHUB_STEP_SUMMARY
+#         fi
+
 name: Validate Terraform
 
 on:
@@ -6,84 +89,74 @@ on:
       - main
 
 env:
-  AWS_REGION : "us-west-2"
+  AWS_REGION: "us-west-2"
 
 permissions:
   id-token: write   # This is required for requesting the JWT
   contents: read    # This is required for actions/checkout
-
 
 jobs:
   terraform:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v2
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
 
-    - name: Authenticate with AWS
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
-        role-to-assume: arn:aws:iam::708398767885:role/github_OIDC_new
-        role-session-name: github_oidc_role_session_new
-        aws-region: ${{ env.AWS_REGION }}
+      - name: Authenticate with AWS
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::708398767885:role/github_OIDC_new
+          role-session-name: github_oidc_role_session_new
+          aws-region: ${{ env.AWS_REGION }}
 
-    - name: Terraform Init
-      run: terraform init 
+      - name: Terraform Init
+        run: terraform init 
 
-    - name: Terraform Validate
-      run: terraform validate
+      - name: Terraform Validate
+        run: terraform validate
 
-    - name: Generate Terraform Plan JSON Output
-      run: |
-        terraform plan -var="db_username=${{ secrets.DB_USERNAME }}" -var="db_password=${{ secrets.DB_PASSWORD }}" -out=tfplan.binary
-        terraform show -json tfplan.binary | grep -v "::debug::" | tail -n +2 > plan.json
+      - name: Generate Terraform Plan JSON Output
+        run: |
+          terraform plan -var="db_username=${{ secrets.DB_USERNAME }}" -var="db_password=${{ secrets.DB_PASSWORD }}" -out=tfplan.binary
+          terraform show -json tfplan.binary | grep -v "::debug::" | tail -n +2 > plan.json
 
-    - name: Setup Infracost
-      uses: infracost/actions/setup@v2
-        # See https://github.com/infracost/actions/tree/master/setup for other inputs
-        # If you can't use this action, see Docker images in https://infracost.io/cicd
-      with:
+      - name: Setup Infracost
+        uses: infracost/actions/setup@v2
+        with:
           api-key: ${{ secrets.INFRACOST_API_KEY }}
 
-    - name: Install OPA
-      run: |
-        curl -L -o opa https://openpolicyagent.org/downloads/latest/opa_linux_amd64
-        chmod 755 ./opa
-        sudo mv opa /usr/local/bin/
-    
-    - name: Generate Infracost JSON Output
-      run: infracost breakdown --path . --format json --out-file infracost_output.json --terraform-var="db_username=${{ secrets.DB_USERNAME }}" --terraform-var="db_password=${{ secrets.DB_PASSWORD }}"
+      - name: Install OPA
+        run: |
+          curl -L -o opa https://openpolicyagent.org/downloads/latest/opa_linux_amd64
+          chmod 755 ./opa
+          sudo mv opa /usr/local/bin/
 
-    - name: Evaluate Rego Policies
-      id: evaluate_policies
-      run: |
-        opa eval --data ./policies/aws_tags_policy.rego --input plan.json --format pretty "data.main.deny" > tags_policy_result.txt
-        opa eval --data ./policies/aws_cost_policy.rego --input infracost_output.json --format pretty "data.main.deny" > cost_policy_result.txt
-        if [[ -s tags_policy_result.txt || -s cost_policy_result.txt ]]; then 
-          exit 1
-        fi
+      - name: Generate Infracost JSON Output
+        run: infracost breakdown --path . --format json --out-file infracost_output.json --terraform-var="db_username=${{ secrets.DB_USERNAME }}" --terraform-var="db_password=${{ secrets.DB_PASSWORD }}"
 
-    - name: Add policy results to job summary
-      if: failure()
-      run: |
-        if [[ -s tags_policy_result.txt ]]; then
-          echo "Tags policy violations:" >> $GITHUB_STEP_SUMMARY
-          cat tags_policy_result.txt >> $GITHUB_STEP_SUMMARY
-        fi
-        if [[ -s cost_policy_result.txt ]]; then
-          echo "Cost policy violations:" >> $GITHUB_STEP_SUMMARY
-          cat cost_policy_result.txt >> $GITHUB_STEP_SUMMARY
-        fi
+      - name: Evaluate Rego Policies
+        id: evaluate_policies
+        run: |
+          opa eval --data ./policies/aws_tags_policy.rego --input plan.json --format pretty "data.main.deny" > tags_policy_result.txt
+          opa eval --data ./policies/aws_cost_policy.rego --input infracost_output.json --format pretty "data.main.deny" > cost_policy_result.txt
+          if [[ -s tags_policy_result.txt || -s cost_policy_result.txt ]]; then 
+            exit 1
+          fi
 
-
-
-      
-
-     
-
+      - name: Add policy results to job summary
+        if: failure()
+        run: |
+          if [[ -s tags_policy_result.txt ]]; then
+            echo "Tags policy violations:" >> $GITHUB_STEP_SUMMARY
+            cat tags_policy_result.txt >> $GITHUB_STEP_SUMMARY
+          fi
+          if [[ -s cost_policy_result.txt ]]; then
+            echo "Cost policy violations:" >> $GITHUB_STEP_SUMMARY
+            cat cost_policy_result.txt >> $GITHUB_STEP_SUMMARY
+          fi
