@@ -1,9 +1,17 @@
 name: Terraform
 
+# on:
+#   push:
+#     branches:
+#       - main
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+    inputs:
+      auto_approve:
+        description: 'Auto approve and apply'
+        required: true
+        default: false
+        type: boolean
 
 env:
   AWS_REGION : "us-west-2"
@@ -27,8 +35,8 @@ jobs:
     - name: Authenticate with AWS
       uses: aws-actions/configure-aws-credentials@v2
       with:
-        role-to-assume: arn:aws:iam::708398767885:role/github_oidc
-        role-session-name: github_oidc_role_session
+        role-to-assume: arn:aws:iam::708398767885:role/github_OIDC_new
+        role-session-name: github_oidc_role_session_new
         aws-region: ${{ env.AWS_REGION }}
 
     - name: Terraform Init
@@ -41,4 +49,5 @@ jobs:
       run: terraform plan -var="db_username=${{ secrets.DB_USERNAME }}" -var="db_password=${{ secrets.DB_PASSWORD }}"
     
     - name: Terraform Apply
+      if: ${{ github.event.inputs.auto_approve }}
       run: terraform apply -auto-approve -var="db_username=${{ secrets.DB_USERNAME }}" -var="db_password=${{ secrets.DB_PASSWORD }}"

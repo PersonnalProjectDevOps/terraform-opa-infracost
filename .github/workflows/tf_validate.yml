@@ -29,8 +29,8 @@ jobs:
     - name: Authenticate with AWS
       uses: aws-actions/configure-aws-credentials@v2
       with:
-        role-to-assume: arn:aws:iam::708398767885:role/github_oidc
-        role-session-name: github_oidc_role_session
+        role-to-assume: arn:aws:iam::708398767885:role/github_OIDC_new
+        role-session-name: github_oidc_role_session_new
         aws-region: ${{ env.AWS_REGION }}
 
     - name: Terraform Init
